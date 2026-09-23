@@ -8,8 +8,7 @@ export default defineEventHandler(async (event) => {
     pathname === '/' ||
     pathname === '' ||
     pathname.startsWith('/api/') ||
-    pathname.startsWith('/_nuxt/') ||
-    pathname.includes('favicon')
+    pathname.startsWith('/_nuxt/')  
   ) {
     return // Deja que Nuxt maneje la página normalmente
   }

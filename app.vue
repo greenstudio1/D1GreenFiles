@@ -20,8 +20,8 @@
             </svg>
           </div>
           <div>
-            <h1>D1Files</h1>
-            <p>Bóveda integrada sobre Nuxt + Cloudflare D1</p>
+            <h1>D1GreenFiles</h1>
+            <p>Bóveda y servidor de archivos sobre Nuxt + Cloudflare D1</p>
           </div>
         </div>
         <div class="storage-badge" v-if="isAuthed">
@@ -31,12 +31,12 @@
 
       <!-- LOGIN -->
       <div v-if="!isAuthed" class="card">
-        <h2 class="card-title">🔐 Acceso al Panel</h2>
+        <h2 class="card-title">🔐 Acceso a D1GreenFiles</h2>
         <label>AUTH_TOKEN:</label>
         <input v-model="authToken" type="password" placeholder="Tu token principal">
         
         <label>CUSTOM_ID_TOKEN (Opcional):</label>
-        <input v-model="customToken" type="password" placeholder="Para slugs personalizados">
+        <input v-model="customToken" type="password" placeholder="Para slugs propios">
 
         <button class="btn-main" style="width:100%; margin-top:16px;" @click="login">
           Desbloquear Panel
@@ -72,7 +72,7 @@
                   <td colspan="5" class="table-empty">Consultando D1...</td>
                 </tr>
                 <tr v-else-if="files.length === 0">
-                  <td colspan="5" class="table-empty">No hay archivos aún.</td>
+                  <td colspan="5" class="table-empty">No hay archivos guardados aún.</td>
                 </tr>
                 <tr v-for="f in files" :key="f.id">
                   <td><strong style="color:#10b981;">{{ f.id }}</strong></td>
@@ -107,7 +107,7 @@
         <h2 style="margin-bottom:12px;">Subir Archivo</h2>
         <input type="file" @change="onFileSelected" style="margin-bottom:12px;">
         <label>ID Personalizado (Opcional):</label>
-        <input v-model="uploadCustomId" placeholder="ej: mi-archivo">
+        <input v-model="uploadCustomId" placeholder="ej: mi-slug">
 
         <p v-if="uploadError" class="error-text">{{ uploadError }}</p>
 
@@ -139,8 +139,8 @@ const uploading = ref(false)
 const uploadError = ref('')
 
 onMounted(() => {
-  const saved = localStorage.getItem('d1files_auth')
-  const savedCustom = localStorage.getItem('d1files_custom')
+  const saved = localStorage.getItem('d1greenfiles_auth')
+  const savedCustom = localStorage.getItem('d1greenfiles_custom')
   if (saved) {
     authToken.value = saved
     customToken.value = savedCustom || ''
@@ -157,16 +157,16 @@ async function login() {
     })
     files.value = res.files || []
     isAuthed.value = true
-    localStorage.setItem('d1files_auth', authToken.value)
-    localStorage.setItem('d1files_custom', customToken.value)
+    localStorage.setItem('d1greenfiles_auth', authToken.value)
+    localStorage.setItem('d1greenfiles_custom', customToken.value)
   } catch (err) {
     authError.value = err?.statusMessage || 'Token incorrecto'
   }
 }
 
 function logout() {
-  localStorage.removeItem('d1files_auth')
-  localStorage.removeItem('d1files_custom')
+  localStorage.removeItem('d1greenfiles_auth')
+  localStorage.removeItem('d1greenfiles_custom')
   isAuthed.value = false
   authToken.value = ''
   customToken.value = ''

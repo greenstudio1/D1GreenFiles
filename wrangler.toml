@@ -1,10 +1,10 @@
-name = "d1files-nuxt"
+name = "d1greenfiles"
 compatibility_date = "2026-09-01"
 pages_build_output_dir = ".output/public"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "d1files-db"
+database_name = "d1greenfiles-db"
 database_id = "tu-database-id-aqui"
 
 [vars]

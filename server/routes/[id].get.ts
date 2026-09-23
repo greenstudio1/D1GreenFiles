@@ -1,9 +1,25 @@
+// server/routes/[id].get.ts
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
-  const env = event.context.cloudflare?.env
+  const url = getRequestURL(event)
+  const pathname = url.pathname
 
-  if (!env?.DB || !id) {
-    throw createError({ statusCode: 404, statusMessage: 'No encontrado' })
+  // 1. Si es la raíz, peticiones de Nuxt, favicon o API, ignorar y pasar al frontend
+  if (
+    pathname === '/' ||
+    pathname === '' ||
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/_nuxt/') ||
+    pathname.includes('favicon')
+  ) {
+    return // Deja que Nuxt maneje la página normalmente
+  }
+
+  const id = getRouterParam(event, 'id')
+  if (!id) return
+
+  const env = event.context.cloudflare?.env
+  if (!env?.DB) {
+    throw createError({ statusCode: 500, statusMessage: 'Falta DB' })
   }
 
   const file = await env.DB.prepare('SELECT filename, mime_type, data FROM files WHERE id = ?')
@@ -15,7 +31,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const encodedFilename = encodeURIComponent(file.filename)
-  
+
   setResponseHeaders(event, {
     'Content-Type': file.mime_type || 'application/octet-stream',
     'Content-Disposition': `inline; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`,

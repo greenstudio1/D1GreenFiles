@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>GreenFiles - Dashboard</title>
+  
+  <!-- Favicon SVG en Data URI -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2310b981'/%3E%3Cstop offset='100%25' stop-color='%23047857'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='6' y='6' width='52' height='52' rx='14' fill='url(%23g)'/%3E%3Cpath d='M22 17 C20.3 17 19 18.3 19 20 L19 44 C19 45.7 20.3 47 22 47 L42 47 C43.7 47 45 45.7 45 44 L45 27 L35 17 Z' fill='%23ffffff' opacity='0.95'/%3E%3Cpath d='M35 17 L35 25 C35 26.1 35.9 27 37 27 L45 27 Z' fill='%23062419' opacity='0.35'/%3E%3Ccircle cx='28' cy='36' r='3' fill='%23047857'/%3E%3Cpath d='M25 43 L31 37 L36 41 L40 37 L43 40 L43 43 Z' fill='%23047857' opacity='0.8'/%3E%3C/svg%3E">
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background: radial-gradient(ellipse at top, #101915 0%, #0c110e 50%); color: #e2e8f0; display: flex; justify-content: center; padding: 18px 14px; min-height: 100vh; overflow-x: hidden; }
@@ -11,7 +15,8 @@
 
     .brand { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
     .brand-left { display: flex; align-items: center; gap: 12px; }
-    .logo-wrap { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); font-size: 20px; }
+    .logo-wrap { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); }
+    .logo-wrap svg { width: 34px; height: 34px; }
     .brand-text h1 { font-size: 20px; font-weight: 800; color: #fff; }
     .brand-text p { font-size: 11px; color: #64748b; }
     .storage-badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 7px 15px; border-radius: 999px; font-size: 12px; color: #10b981; font-weight: 600; }
@@ -50,7 +55,7 @@
 
     .dropzone { border: 2px dashed #233228; border-radius: 12px; padding: 24px 16px; text-align: center; background: #0c110e; cursor: pointer; margin-bottom: 8px; }
     .dropzone:hover { border-color: #10b981; }
-    .error-text { color: #fca5a5; font-size: 12px; margin-top: 8px; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; }
+    .error-text { color: #fca5a5; font-size: 12px; margin-top: 8px; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.2); }
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f1a15; border: 1px solid #065f46; color: #6ee7b7; padding: 12px 22px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 100; transition: transform 0.3s, opacity 0.3s; opacity: 0; }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   </style>
@@ -60,7 +65,13 @@
 <div class="container">
   <div class="brand">
     <div class="brand-left">
-      <div class="logo-wrap" onclick="location.reload()">📁</div>
+      <div class="logo-wrap" onclick="location.reload()">
+        <svg viewBox="0 0 64 64">
+          <path d="M22 17 C20.3 17 19 18.3 19 20 L19 44 C19 45.7 20.3 47 22 47 L42 47 C43.7 47 45 45.7 45 44 L45 27 L35 17 Z" fill="#ffffff"/>
+          <circle cx="28" cy="36" r="3" fill="#047857"/>
+          <path d="M25 43 L31 37 L36 41 L40 37 L43 40 L43 43 Z" fill="#047857"/>
+        </svg>
+      </div>
       <div class="brand-text">
         <h1>GreenFiles</h1>
         <p>Bóveda nativa sobre Cloudflare Pages + D1</p>
@@ -173,11 +184,9 @@
     const customVal = document.getElementById('customLoginInput').value.trim();
     if (!authVal) return;
 
-    localStorage.setItem('greenfiles_auth', authVal);
-    localStorage.setItem('greenfiles_custom', customVal);
     token = authVal;
     customToken = customVal;
-    verifyAndShowApp();
+    verifyAndShowApp(true);
   }
 
   function logout() {
@@ -185,32 +194,71 @@
     localStorage.removeItem('greenfiles_custom');
     token = '';
     customToken = '';
+    loadedFiles = [];
     document.getElementById('dashView').style.display = 'none';
     document.getElementById('dbStorage').style.display = 'none';
     document.getElementById('authView').style.display = 'block';
   }
 
-  async function verifyAndShowApp() {
+  async function verifyAndShowApp(saveOnSuccess = false) {
+    const errorBox = document.getElementById('authError');
+    errorBox.style.display = 'none';
+    errorBox.textContent = '';
+
     try {
-      const res = await fetch('/api/files', { headers: { 'Authorization': 'Bearer ' + token } });
+      const res = await fetch('/api/files', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+
       if (res.status === 401) {
-        document.getElementById('authError').textContent = 'AUTH_TOKEN incorrecto';
-        document.getElementById('authError').style.display = 'block';
+        logout();
+        errorBox.textContent = '❌ AUTH_TOKEN incorrecto o no autorizado.';
+        errorBox.style.display = 'block';
         return;
       }
+
+      if (!res.ok) {
+        let errMsg = 'Error del servidor (' + res.status + ')';
+        try {
+          const errData = await res.json();
+          if (errData && errData.error) errMsg = errData.error;
+        } catch (_) {}
+
+        logout();
+        errorBox.textContent = '⚠️ ' + errMsg;
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      const data = await res.json();
+      loadedFiles = data.files || [];
+
+      if (saveOnSuccess) {
+        localStorage.setItem('greenfiles_auth', token);
+        localStorage.setItem('greenfiles_custom', customToken);
+      }
+
       document.getElementById('authView').style.display = 'none';
       document.getElementById('dashView').style.display = 'block';
       document.getElementById('dbStorage').style.display = 'inline-flex';
-      fetchFiles();
+      renderTable();
+
     } catch (e) {
-      document.getElementById('authError').textContent = e.message;
-      document.getElementById('authError').style.display = 'block';
+      logout();
+      errorBox.textContent = '🚨 Error de conexión o API no disponible: ' + e.message;
+      errorBox.style.display = 'block';
     }
   }
 
   async function fetchFiles() {
     try {
-      const res = await fetch('/api/files', { headers: { 'Authorization': 'Bearer ' + token } });
+      const res = await fetch('/api/files', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) {
+        if (res.status === 401) logout();
+        return;
+      }
       const data = await res.json();
       loadedFiles = data.files || [];
       renderTable();
@@ -243,8 +291,8 @@
             '<a class="btn-action" href="' + viewUrl + '" target="_blank">Ver (HTML)</a>' +
             '<a class="btn-action" href="' + rawUrl + '" target="_blank">Crudo</a>' +
             '<a class="btn-action" href="' + downloadUrl + '" download>Descargar</a>' +
-            '<button class="btn-action" onclick="copyLink(\'' + rawUrl + '\')">Copiar Raw</button>' +
-            '<button class="btn-action btn-del" onclick="deleteSingle(\'' + f.id + '\')">🗑️</button>' +
+            '<button class="btn-action" onclick="copyLink(\\'' + rawUrl + '\\')">Copiar Raw</button>' +
+            '<button class="btn-action btn-del" onclick="deleteSingle(\\'' + f.id + '\\')">🗑️</button>' +
           '</div>' +
         '</td>' +
       '</tr>';
@@ -322,7 +370,7 @@
   if (token) {
     document.getElementById('authLoginInput').value = token;
     document.getElementById('customLoginInput').value = customToken;
-    verifyAndShowApp();
+    verifyAndShowApp(false);
   }
 </script>
 </body>

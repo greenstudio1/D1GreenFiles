@@ -1,110 +1,23 @@
-# 📁 D1GreenFiles
-
-A unified file vault and delivery server built on **Nuxt 3** and **Cloudflare Pages**, powered directly by **Cloudflare D1 (SQLite)**.
-
-Everything runs inside a single project: a reactive Vue 3 frontend, management API routes, and direct binary delivery/rendering (`/:id`) without relying on external standalone Workers.
-
----
-
-## 📋 Prerequisites & Requirements
-
-### 1. Local Environment
-* **Node.js**: Version 18.x or 20+ recommended.
-* **Package Manager**: `npm`, `pnpm`, or `bun`.
-* **Cloudflare Account**: With access to D1 and Pages (both available on the free tier).
-* **Wrangler CLI**: Included with project dev dependencies (`npx wrangler`).
-
----
-
-## ⚙️ Cloudflare D1 Setup
-
-1. **Log in to Cloudflare:**
-   ```bash
-   npx wrangler login
-   ```
-
-2. **Create the D1 database:**
-   ```bash
-   npx wrangler d1 create d1greenfiles-db
-   ```
-   *Copy the `database_id` displayed in your terminal after running this command.*
-
----
-
-## 🔐 Environment Variables & Bindings
-
-Edit your `wrangler.toml` file with your credentials and database configuration:
-
-```toml
-name = "d1greenfiles"
-compatibility_date = "2026-09-01"
-pages_build_output_dir = ".output/public"
-
-# Required database binding
-[[d1_databases]]
-binding = "DB"
-database_name = "d1greenfiles-db"
-database_id = "PASTE_YOUR_DATABASE_ID_HERE"
-
-[vars]
-# Required token to access dashboard, upload, and delete files
-AUTH_TOKEN = "your_secret_access_token_here"
-
-# Optional token required to create and manage custom slugs/IDs
-CUSTOM_ID_TOKEN = "your_secret_custom_id_token_here"
-```
-
-> **Note:** The SQLite `files` schema is created automatically upon the first API request, so no manual migrations are needed.
-
----
-
-## 🚀 Installation & Local Development
-
-### Step 1: Install dependencies
-```bash
-npm install
-```
-
-### Step 2: Run locally
-Run the app locally with full Cloudflare Pages and D1 emulation:
-```bash
-npx wrangler pages dev -- npm run dev
-```
-The application will default to `http://localhost:8788`.
-
----
-
-## 📦 Build & Production Deployment
-
-1. **Build the Nuxt application:**
-   ```bash
-   npm run build
-   ```
-
-2. **Deploy to Cloudflare Pages:**
-   ```bash
-   npx wrangler pages deploy .output/public
-   ```
-
----
-
-## 🌐 Routes & Endpoints
-
-| Route | Method | Description |
-|---|---|---|
-| `/` | `GET` | Web control dashboard (Vue 3 / Nuxt). |
-| `/:id` | `GET` | Direct binary delivery/rendering with original MIME type. |
-| `/api/files` | `GET` | Lists files stored in D1 (Requires `Bearer AUTH_TOKEN`). |
-| `/api/files` | `POST` | Multipart file upload (Requires `Bearer AUTH_TOKEN`). |
-| `/api/files/:id` | `DELETE` | Deletes a file by ID (Requires `Bearer AUTH_TOKEN`). |
-
----
-
-## 🔒 Security Recommendations
-
-* For production deployments, store sensitive credentials using encrypted secrets:
-  ```bash
-  npx wrangler pages secret put AUTH_TOKEN
-  npx wrangler pages secret put CUSTOM_ID_TOKEN
-  ```
-* D1 SQLite rows have query size constraints; optimize large assets accordingly.
+📁 GreenFilesA minimalist, high-performance file management and delivery service built on Cloudflare Pages and Cloudflare D1 (SQLite).GreenFiles eliminates complex build setups and heavy frameworks in favor of native static assets served from the root directory combined with Pages Functions for serverless backend logic and direct database blob streaming.⚡ Key HighlightsZero-Build Architecture: Pure HTML5/JavaScript dashboard at the root (index.html) with Pages Functions (functions/). No build step, bundling, or node dependencies required.Dedicated Route Namespaces: All file consumption routes live strictly under /t/ to prevent collisions with frontend routing.Dual Display Modes:Decorated View (/t/:id): Embedded media player, image lightbox, or metadata card with inline controls.Raw Streaming (/t/raw/:id): Direct binary delivery with original MIME headers for clean hotlinking and embeds.Forced Download (/t/download/:id): Explicit binary attachment download.SQLite Blob Vault: Metadata and binary payload stored cohesively within Cloudflare D1 with auto-initializing schema.Dual-Layer Access Control: Master bearer authorization alongside an optional elevated token for custom alphanumeric slugs.🛠️ Project Structure.
+├── index.html                   # Static web management dashboard (root)
+└── functions/
+    ├── _utils.js                # D1 schema auto-init, binary parser & MIME resolution
+    ├── _viewer.js               # Responsive HTML viewer template for /t/:id
+    ├── t/
+    │   ├── [id].js              # GET: Render styled viewer layout
+    │   ├── raw/
+    │   │   └── [id].js          # GET: Output raw binary payload
+    │   └── download/
+    │       └── [id].js          # GET: Force binary attachment download
+    └── api/
+        └── files/
+            ├── index.js         # GET: List stored records | POST: Multipart file upload
+            └── [id].js          # DELETE: Remove record by identifier
+📋 PrerequisitesNode.js (v18.x or v20+ recommended) for running the Wrangler CLI.A free or paid Cloudflare Account.Cloudflare Wrangler CLI (npm install -g wrangler or via npx wrangler).🚀 Getting Started1. Provision Your Cloudflare D1 DatabaseExecute the following command in your terminal to create the database:npx wrangler d1 create greenfiles-db
+Take note of the output database_id.2. Run LocallyStart the Cloudflare Pages development server pointing directly to the root directory, binding your database and environment secrets through flags:npx wrangler pages dev . \
+  --d1=DB=YOUR_DATABASE_ID_HERE \
+  --binding AUTH_TOKEN="your_super_secret_auth_token" \
+  --binding CUSTOM_ID_TOKEN="your_custom_slug_secret"
+Open http://localhost:8788 in your browser. Enter your AUTH_TOKEN into the access prompt to unlock the dashboard.Note: Database tables are provisioned automatically during the first request to the backend.🌐 Endpoints & URL StructureMethodEndpointDescriptionAuth RequiredGET/Web Dashboard management interfaceClient LoginGET/t/:idStyled HTML presentation card (player/preview)PublicGET/t/raw/:idDirect binary output with authentic Content-TypePublicGET/t/download/:idImmediate binary file download (attachment)PublicGET/api/filesQuery recent files metadataBearer AUTH_TOKENPOST/api/filesMultipart file upload payloadBearer AUTH_TOKENDELETE/api/files/:idRemove file and associated blob recordBearer AUTH_TOKEN🚢 Production DeploymentYou can deploy the project directly from your CLI without generating configuration files.1. Create the Pages Projectnpx wrangler pages project create greenfiles --production-branch main
+2. Deploy the Root Directorynpx wrangler pages deploy . --project-name greenfiles
+3. Configure Bindings & Variables in Cloudflare DashboardNavigate to Cloudflare Dashboard > Workers & Pages > greenfiles.Go to Settings > Bindings:Add a D1 Database Binding:Variable Name: DBDatabase: select greenfiles-db.Go to Settings > Environment variables:AUTH_TOKEN: Your secret token for upload/deletion and dashboard login.CUSTOM_ID_TOKEN (optional): Elevation secret required to assign custom IDs.📄 LicenseThis project is licensed under the MIT-NC (MIT Non-Commercial) License.Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, and distribute copies of the Software, for non-commercial purposes only, subject to the following conditions:The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.Commercial use, exploitation, or distribution of this Software is strictly prohibited without prior written authorization from the copyright holder.THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GreenFiles - Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: radial-gradient(ellipse at top, #101915 0%, #0c110e 50%); color: #e2e8f0; display: flex; justify-content: center; padding: 18px 14px; min-height: 100vh; overflow-x: hidden; }
+    .container { width: 100%; max-width: 1050px; }
+
+    .brand { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .brand-left { display: flex; align-items: center; gap: 12px; }
+    .logo-wrap { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3); font-size: 20px; }
+    .brand-text h1 { font-size: 20px; font-weight: 800; color: #fff; }
+    .brand-text p { font-size: 11px; color: #64748b; }
+    .storage-badge { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 7px 15px; border-radius: 999px; font-size: 12px; color: #10b981; font-weight: 600; }
+
+    .card { background: #131a16; border: 1px solid #1e2a22; border-radius: 16px; padding: 22px; margin-bottom: 20px; box-shadow: 0 6px 24px rgba(0,0,0,0.35); }
+    .card-title { font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 16px; }
+    label { display: block; font-size: 11px; font-weight: 700; color: #94a3b8; margin: 12px 0 6px; text-transform: uppercase; letter-spacing: 0.8px; }
+    input { width: 100%; padding: 11px 14px; background: #0c110e; border: 1px solid #233228; border-radius: 10px; color: #fff; font-size: 14px; outline: none; transition: border-color 0.2s; }
+    input:focus { border-color: #10b981; }
+
+    .btn-main { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #062419; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+    .btn-main:hover { transform: translateY(-1px); }
+    .btn-secondary { background: #1b2620; border: 1px solid #27382d; color: #e2e8f0; padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-danger { background: #7f1d1d; border: none; color: #fca5a5; padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+    .btn-action { background: #17261e; border: 1px solid #21352a; color: #e2e8f0; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-action:hover { border-color: #10b981; color: #10b981; }
+    .btn-del { color: #f87171; background: rgba(38, 23, 23, 0.6); }
+
+    .nav { display: flex; gap: 6px; margin-bottom: 20px; padding: 6px; background: #131a16; border: 1px solid #1e2a22; border-radius: 12px; align-items: center; }
+    .nav-actions { margin-left: auto; display: flex; gap: 8px; }
+
+    .table-container { width: 100%; overflow-x: auto; border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 680px; }
+    th { text-align: left; padding: 12px 10px; background: #0c110e; border-bottom: 1px solid #1e2a22; color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    td { padding: 12px 10px; border-bottom: 1px solid #16201a; vertical-align: middle; }
+    tr:hover td { background: rgba(16, 185, 129, 0.03); }
+
+    .tag { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
+    .tag-custom { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+    .tag-random { background: rgba(51, 65, 85, 0.5); color: #94a3b8; }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 99; padding: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-box { background: #131a16; border: 1px solid #233228; border-radius: 16px; width: 100%; max-width: 520px; padding: 24px; }
+
+    .dropzone { border: 2px dashed #233228; border-radius: 12px; padding: 24px 16px; text-align: center; background: #0c110e; cursor: pointer; margin-bottom: 8px; }
+    .dropzone:hover { border-color: #10b981; }
+    .error-text { color: #fca5a5; font-size: 12px; margin-top: 8px; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 6px; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: #0f1a15; border: 1px solid #065f46; color: #6ee7b7; padding: 12px 22px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 100; transition: transform 0.3s, opacity 0.3s; opacity: 0; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="brand">
+    <div class="brand-left">
+      <div class="logo-wrap" onclick="location.reload()">📁</div>
+      <div class="brand-text">
+        <h1>GreenFiles</h1>
+        <p>Bóveda nativa sobre Cloudflare Pages + D1</p>
+      </div>
+    </div>
+    <div id="dbStorage" class="storage-badge" style="display:none;">
+      <span id="storageCount">0 archivos</span>
+    </div>
+  </div>
+
+  <!-- AUTH GATE -->
+  <div id="authView" class="card">
+    <div class="card-title">🔐 Acceso a GreenFiles</div>
+    <label for="authLoginInput">AUTH_TOKEN (Obligatorio):</label>
+    <input type="password" id="authLoginInput" placeholder="Ingresa tu clave AUTH_TOKEN" autocomplete="off">
+
+    <label for="customLoginInput">CUSTOM_ID_TOKEN (Opcional):</label>
+    <input type="password" id="customLoginInput" placeholder="Ingresa tu clave CUSTOM_ID_TOKEN" autocomplete="off">
+
+    <div id="authError" class="error-text" style="display:none;"></div>
+    <button class="btn-main" style="width:100%; margin-top: 18px;" onclick="authLogin()">Desbloquear Panel</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashView" style="display:none;">
+    <div class="nav">
+      <span style="font-size: 13px; font-weight: 700; color: #10b981; margin-left: 8px;">Archivos Guardados</span>
+      <div class="nav-actions">
+        <button class="btn-main" onclick="openCreateModal()">📤 Subir Archivo</button>
+        <button class="btn-secondary" onclick="fetchFiles()">↻ Recargar</button>
+        <button class="btn-danger" onclick="logout()">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Archivo / Tamaño</th>
+              <th>Tipo</th>
+              <th>Fecha</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="filesTableBody">
+            <tr><td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">Consultando D1...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- MODAL SUBIDA -->
+<div id="createModal" class="modal-overlay">
+  <div class="modal-box">
+    <div style="display:flex; justify-content:space-between; margin-bottom:14px;">
+      <h2 style="font-size: 16px; font-weight: 700;">Subir Nuevo Archivo</h2>
+      <button onclick="closeModals()" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer;">✕</button>
+    </div>
+
+    <div class="dropzone" onclick="document.getElementById('fileInput').click()">
+      <p style="font-size: 12px; color: #94a3b8;">Haz clic o arrastra cualquier archivo aquí</p>
+      <div id="fileNamePreview" style="margin-top:8px; font-weight:700; color:#10b981; font-size:13px; display:none;"></div>
+    </div>
+    <input type="file" id="fileInput" style="display:none;" onchange="handleFileSelected(this)">
+
+    <label for="newCustomId">ID Personalizado (Opcional):</label>
+    <input type="text" id="newCustomId" placeholder="ej: mi-archivo">
+
+    <div id="createError" class="error-text" style="display:none;"></div>
+    <div style="display: flex; gap: 8px; margin-top: 18px;">
+      <button class="btn-main" style="flex:1;" id="btnSaveNew" onclick="uploadNewFile()">Subir Archivo</button>
+      <button class="btn-secondary" onclick="closeModals()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let token = localStorage.getItem('greenfiles_auth') || '';
+  let customToken = localStorage.getItem('greenfiles_custom') || '';
+  let loadedFiles = [];
+  let selectedUploadFile = null;
+
+  function escapeHtml(text) {
+    return String(text || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show';
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  function formatBytes(bytes) {
+    if (!bytes) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  }
+
+  function authLogin() {
+    const authVal = document.getElementById('authLoginInput').value.trim();
+    const customVal = document.getElementById('customLoginInput').value.trim();
+    if (!authVal) return;
+
+    localStorage.setItem('greenfiles_auth', authVal);
+    localStorage.setItem('greenfiles_custom', customVal);
+    token = authVal;
+    customToken = customVal;
+    verifyAndShowApp();
+  }
+
+  function logout() {
+    localStorage.removeItem('greenfiles_auth');
+    localStorage.removeItem('greenfiles_custom');
+    token = '';
+    customToken = '';
+    document.getElementById('dashView').style.display = 'none';
+    document.getElementById('dbStorage').style.display = 'none';
+    document.getElementById('authView').style.display = 'block';
+  }
+
+  async function verifyAndShowApp() {
+    try {
+      const res = await fetch('/api/files', { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.status === 401) {
+        document.getElementById('authError').textContent = 'AUTH_TOKEN incorrecto';
+        document.getElementById('authError').style.display = 'block';
+        return;
+      }
+      document.getElementById('authView').style.display = 'none';
+      document.getElementById('dashView').style.display = 'block';
+      document.getElementById('dbStorage').style.display = 'inline-flex';
+      fetchFiles();
+    } catch (e) {
+      document.getElementById('authError').textContent = e.message;
+      document.getElementById('authError').style.display = 'block';
+    }
+  }
+
+  async function fetchFiles() {
+    try {
+      const res = await fetch('/api/files', { headers: { 'Authorization': 'Bearer ' + token } });
+      const data = await res.json();
+      loadedFiles = data.files || [];
+      renderTable();
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('filesTableBody');
+    document.getElementById('storageCount').textContent = loadedFiles.length + ' archivos';
+
+    if (loadedFiles.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 24px;">No hay archivos guardados aún.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = loadedFiles.map(f => {
+      const viewUrl = '/t/' + f.id;
+      const rawUrl = '/t/raw/' + f.id;
+      const downloadUrl = '/t/download/' + f.id;
+
+      return '<tr>' +
+        '<td><strong style="color:#10b981;">' + f.id + '</strong></td>' +
+        '<td><div><strong>' + escapeHtml(f.filename) + '</strong></div><div style="font-size:11px; color:#64748b;">' + formatBytes(f.size_bytes) + '</div></td>' +
+        '<td><span class="tag ' + (f.is_custom ? 'tag-custom' : 'tag-random') + '">' + (f.is_custom ? 'Custom' : 'Random') + '</span></td>' +
+        '<td style="color:#64748b; font-size:12px;">' + (f.created_at || '').substring(0, 16) + '</td>' +
+        '<td>' +
+          '<div style="display:flex; gap:4px;">' +
+            '<a class="btn-action" href="' + viewUrl + '" target="_blank">Ver (HTML)</a>' +
+            '<a class="btn-action" href="' + rawUrl + '" target="_blank">Crudo</a>' +
+            '<a class="btn-action" href="' + downloadUrl + '" download>Descargar</a>' +
+            '<button class="btn-action" onclick="copyLink(\'' + rawUrl + '\')">Copiar Raw</button>' +
+            '<button class="btn-action btn-del" onclick="deleteSingle(\'' + f.id + '\')">🗑️</button>' +
+          '</div>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function copyLink(path) {
+    navigator.clipboard.writeText(window.location.origin + path);
+    showToast('Enlace copiado al portapapeles');
+  }
+
+  function openCreateModal() {
+    selectedUploadFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('fileNamePreview').style.display = 'none';
+    document.getElementById('newCustomId').value = '';
+    document.getElementById('createError').style.display = 'none';
+    document.getElementById('createModal').classList.add('active');
+  }
+
+  function closeModals() {
+    document.getElementById('createModal').classList.remove('active');
+  }
+
+  function handleFileSelected(input) {
+    if (input.files && input.files[0]) {
+      selectedUploadFile = input.files[0];
+      const p = document.getElementById('fileNamePreview');
+      p.textContent = selectedUploadFile.name + ' (' + formatBytes(selectedUploadFile.size) + ')';
+      p.style.display = 'block';
+    }
+  }
+
+  async function uploadNewFile() {
+    if (!selectedUploadFile) return;
+    const btn = document.getElementById('btnSaveNew');
+    btn.disabled = true;
+
+    const fd = new FormData();
+    fd.append('file', selectedUploadFile);
+    const customId = document.getElementById('newCustomId').value.trim();
+    if (customId) fd.append('custom_id', customId);
+
+    const headers = { 'Authorization': 'Bearer ' + token };
+    if (customToken) headers['X-Custom-ID-Token'] = customToken;
+
+    try {
+      const res = await fetch('/api/files', { method: 'POST', headers, body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Fallo al subir');
+
+      closeModals();
+      showToast('Archivo guardado');
+      fetchFiles();
+    } catch (e) {
+      document.getElementById('createError').textContent = e.message;
+      document.getElementById('createError').style.display = 'block';
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function deleteSingle(id) {
+    if (!confirm('¿Eliminar ' + id + '?')) return;
+    const headers = { 'Authorization': 'Bearer ' + token };
+    if (customToken) headers['X-Custom-ID-Token'] = customToken;
+
+    const res = await fetch('/api/files/' + encodeURIComponent(id), { method: 'DELETE', headers });
+    if (res.ok) {
+      showToast('Archivo eliminado');
+      fetchFiles();
+    }
+  }
+
+  if (token) {
+    document.getElementById('authLoginInput').value = token;
+    document.getElementById('customLoginInput').value = customToken;
+    verifyAndShowApp();
+  }
+</script>
+</body>
+</html>
